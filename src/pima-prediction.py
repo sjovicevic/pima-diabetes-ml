@@ -6,6 +6,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegressionCV
 import numpy as np
 
 df = pd.read_csv("./data/pima-data.csv")
@@ -112,3 +113,9 @@ while(C_val < C_end):
 
 best_score_C_val = C_values[recall_scores.index(best_recall_score)]
 print("1st max value of {0:.3f} occured at C={1:.3f}".format(best_recall_score, best_score_C_val))
+
+lr_cv_model = LogisticRegressionCV(n_jobs=-1, random_state=42, Cs=3, cv=10, refit=False, class_weight="balanced", max_iter=1000)
+lr_cv_model.fit(X_train, y_train.ravel())
+
+print(lr_cv_model)
+
