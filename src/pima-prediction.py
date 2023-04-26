@@ -4,9 +4,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.naive_bayes import GaussianNB
 from sklearn import metrics
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 import numpy as np
 
-df = pd.read_csv("../data/pima-data.csv")
+df = pd.read_csv("./data/pima-data.csv")
 
 # Deleted skin column because of redundant data
 del df['skin']
@@ -67,3 +69,46 @@ print()
 
 print("Classification Report")
 print(metrics.classification_report(y_test, nb_predict_test))
+
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train.ravel())
+
+rf_predict_train = rf_model.predict(X_train)
+print("Accuracy: {0:.4f}".format(metrics.accuracy_score(y_train, rf_predict_train)))
+
+rf_predict_test = rf_model.predict(X_test)
+print("Accuracy: {0:.4f}".format(metrics.accuracy_score(y_test, rf_predict_test)))
+
+lr_model = LogisticRegression(C=0.7, random_state=42, max_iter=1000)
+lr_model.fit(X_train, y_train.ravel())
+lr_predict_test = lr_model.predict(X_test)
+
+print("Accuracy: {0:.4f}".format(metrics.accuracy_score(y_test, lr_predict_test)))
+print(metrics.confusion_matrix(y_test, lr_predict_test))
+print()
+print("Classification report")
+print(metrics.classification_report(y_test, lr_predict_test))
+
+C_start = 0.1
+C_end = 5
+C_inc = 0.1
+
+C_values, recall_scores = [], []
+
+C_val = C_start
+best_recall_score = 0
+while(C_val < C_end):
+    C_values.append(C_val)
+    lr_model_loop = LogisticRegression(C=C_val, random_state=42, max_iter=1000)
+    lr_model_loop.fit(X_train, y_train.ravel())
+    lr_predict_loop_test = lr_model_loop.predict(X_test)
+    recall_score = metrics.recall_score(y_test, lr_predict_loop_test)
+    recall_scores.append(recall_score)
+    if(recall_score > best_recall_score):
+        best_recall_score = recall_score
+        best_lr_predict_test = lr_predict_loop_test
+
+    C_val = C_val + C_inc
+
+best_score_C_val = C_values[recall_scores.index(best_recall_score)]
+print("1st max value of {0:.3f} occured at C={1:.3f}".format(best_recall_score, best_score_C_val))
