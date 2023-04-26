@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.naive_bayes import GaussianNB
+from sklearn import metrics
 import numpy as np
 
 df = pd.read_csv("../data/pima-data.csv")
@@ -40,6 +41,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_test_s
 
 print("{0:0.2f}% in training set".format((len(X_train)/len(df.index)) * 100))
 print("{0:0.2f}% in test set".format((len(X_test)/len(df.index)) * 100))
+print()
 
 fill_0 = SimpleImputer(missing_values = 0, strategy="mean")
 
@@ -49,4 +51,19 @@ X_test = fill_0.fit_transform(X_test)
 nb_model = GaussianNB()
 nb_model.fit(X_train, y_train.ravel())
 
-print(nb_model.get_params())
+
+nb_predict_train = nb_model.predict(X_train)
+nb_predict_test = nb_model.predict(X_test)
+
+print("Accuracy: {0:.4f}".format(metrics.accuracy_score(y_train, nb_predict_train)))
+print()
+
+print("Accuracy: {0:.4f}".format(metrics.accuracy_score(y_test, nb_predict_test)))
+print()
+
+print("Confusion Matrix")
+print("{0}".format(metrics.confusion_matrix(y_test, nb_predict_test)))
+print()
+
+print("Classification Report")
+print(metrics.classification_report(y_test, nb_predict_test))
